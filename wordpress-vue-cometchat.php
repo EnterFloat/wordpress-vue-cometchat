@@ -1,8 +1,16 @@
 <?php
 /**
- * Plugin Name: WordPress Vue Tutorial
- * Description: A demo on how to use Vue in WordPress.
+ * Plugin Name: WordPress, Vue, CometChat
+ * Description: A WordPress plugin integrating CometChat with a Vue app.
  */
+
+function custom_dequeue_script() {
+  wp_dequeue_script( 'script-handle' );
+  wp_dequeue_style('script-handle');
+  wp_deregister_style('script-handle');
+}
+
+add_action( 'wp_print_scripts', 'custom_dequeue_script', 9999 );
 
 //Register scripts to use
 function func_load_vuescripts() {
@@ -11,7 +19,6 @@ function func_load_vuescripts() {
 }
 //Tell WordPress to register the scripts
 add_action('wp_enqueue_scripts', 'func_load_vuescripts');
-
 
 //Return string for shortcode
 function func_wp_vue(){
@@ -22,7 +29,6 @@ function func_wp_vue(){
 
   //Build String
   $str= "<div id='app'>"
-  	."Message from Vue: {{ message }}"
   	."</div>";
 
   //Return to display
@@ -30,5 +36,5 @@ function func_wp_vue(){
 } // end function
 
 //Add shortcode to WordPress
-add_shortcode( 'wpvue', 'func_wp_vue' );
+add_shortcode( 'wp-vue-cometchat', 'func_wp_vue' );
 ?>

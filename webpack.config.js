@@ -1,11 +1,16 @@
 var path = require('path')
 var webpack = require('webpack')
+let public_path = "/dist/"
+if (process.env.NODE_ENV === "production") {
+  public_path = "../wp-content/plugins/wordpress-vue-cometchat/dist/";
+}
+console.log(public_path)
 
 module.exports = {
   entry: './src/main.js',
   output: {
     path: path.resolve(__dirname, './dist'),
-    publicPath: '/dist/',
+    publicPath: public_path,
     filename: 'build.js'
   },
   module: {
