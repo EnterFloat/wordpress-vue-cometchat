@@ -4,13 +4,56 @@
  * Description: A WordPress plugin integrating CometChat with a Vue app.
  */
 
-function custom_dequeue_script() {
-  wp_dequeue_script( 'script-handle' );
-  wp_dequeue_style('script-handle');
-  wp_deregister_style('script-handle');
+ // Register cometchat meta get endpoint
+add_action( 'rest_api_init', 'get_cometchat_meta_rest_route' );
+function get_cometchat_meta_rest_route() {
+    register_rest_route( 'wordpress-vue-cometchat/meta', '/get', [
+        'methods'  => 'POST',
+        'callback' => function ( $request ) {
+          $current_user_id = get_current_user_id();
+            return [                
+                'get_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true),                     
+            ];
+        },
+    ] );
 }
 
-add_action( 'wp_print_scripts', 'custom_dequeue_script', 9999 );
+ // Register cometchat meta update endpoint
+ add_action( 'rest_api_init', 'update_cometchat_meta_rest_route' );
+ function update_cometchat_meta_rest_route() {
+     register_rest_route( 'wordpress-vue-cometchat/meta', '/update', [
+         'methods'  => 'POST',
+         'callback' => function ( $request ) {
+          $current_user_id = get_current_user_id();
+          $cometchat_data = $request->get_param('cometchat_data');
+          update_user_meta($current_user_id, 'cometchat_data', $cometchat_data);
+             return [
+                  'current_user_id: ' . $current_user_id,          
+                  'update_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true),          
+             ];
+         },
+     ] );
+ }
+
+// add_action( 'wp_enqueue_scripts', 'my_enqueue_scripts' );
+// function my_enqueue_scripts() {
+//     // Enqueue the script which makes the AJAX call to /wp-json/my-plugin/v1/foo.
+//     wp_enqueue_script( 'my-script', 'my-script.js', [ 'jquery' ] );
+
+//     // Register custom variables for the AJAX script.
+//     wp_localize_script( 'my-script', 'myScriptVars', [
+//         'root'  => esc_url_raw( rest_url() ),
+//         'nonce' => wp_create_nonce( 'wp_rest' ),
+//     ] );
+// }
+
+// function custom_dequeue_script() {
+//   wp_dequeue_script( 'script-handle' );
+//   wp_dequeue_style('script-handle');
+//   wp_deregister_style('script-handle');
+// }
+
+// add_action( 'wp_print_scripts', 'custom_dequeue_script', 9999 );
 
 //Register scripts to use
 function func_load_vuescripts() {
@@ -26,6 +69,11 @@ function func_wp_vue(){
   wp_enqueue_script('wpvue_vuejs');
   //Add my code to it
   wp_enqueue_script('my_vuecode');
+  //Localize with 'myScriptVars
+  wp_localize_script( 'my_vuecode', 'myScriptVars', [
+    'root'  => esc_url_raw( rest_url() ),
+    'nonce' => wp_create_nonce( 'wp_rest' ),
+] );
 
   //Build String
   $str= "<div id='app'>"

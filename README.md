@@ -1,6 +1,6 @@
-# webpack-simple-dev-test
+# WordPress Vue CometChat
 
-> A Vue.js project
+> Vue CometChat integrated in a WordPress plugin.
 
 ## Build Setup
 

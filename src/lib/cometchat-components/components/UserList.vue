@@ -33,8 +33,7 @@
           <!-- <div class="chat-contact-listitem"> -->
           <Avatar :item="userRow" />
           <div class="chat-ppl-listitem-dtls">
-            <span class="chat-ppl-listitem-name">{{userRow.name}}</span>
-            <Log :log_data="userRow" />            
+            <span class="chat-ppl-listitem-name">{{userRow.name}}</span>                    
           </div>
           <!-- <div class="chat-contact-listitem-name ccl-semi-bold-text">{{userRow.name}}</div> -->
           <!-- </div> -->
