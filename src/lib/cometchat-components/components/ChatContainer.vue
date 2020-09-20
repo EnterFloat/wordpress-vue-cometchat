@@ -6,8 +6,9 @@
         id="pageWrapper"
         :class="{ 'left-open': leftOpen, 'center-open': centerOpen, 'right-open': rightOpen }"
       >
-        <button id="getMetaButton" v-on:click="getMeta">Get meta</button>        
-        <button id="getMetaButton" v-on:click="updateMetaButton">Update meta</button>        
+        <button class="get-meta-button" v-on:click="getMeta">Get meta</button>        
+        <button class="get-meta-button" v-on:click="updateMetaButton">Update meta</button>        
+        <button class="get-meta-button" v-on:click="getUser">Get user</button>        
         <!--Calls and Group list-->
         <LeftSidebar />
         <!--Chat Window-->
@@ -46,6 +47,10 @@ export default {
       console.log("updateMetaButton");      
       this.updateMeta({status: "god!"})
     },
+    getUser: function () {
+      console.log("getUser");      
+      this.getUserCometChat("superhero3")
+    },
   },
   created() {
     CometChat.getLoggedinUser().then(
@@ -75,10 +80,13 @@ export default {
 </script>
 
 <style>
-@media (min-width: 320px) and (max-width: 767px) {
-  #getMetaButton {
-    height: 50vh;
+  .get-meta-button {
+    height: 100px;
+    display: block;
+    background: red;
+    margin: 1rem;
   }
+@media (min-width: 320px) and (max-width: 767px) {
 
   .page-int-wrapper .ccl-left-panel,
   .page-int-wrapper .ccl-center-panel,

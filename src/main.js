@@ -4,7 +4,7 @@ import VueRouter from 'vue-router';
 import routes from './routes';
 import { CometChat } from "@cometchat-pro/chat";
 import {COMETCHAT_CONSTANTS} from './CONSTS';
-import $ from "jquery";
+import { RestApi } from './api';
 
 Vue.config.productionTip = false;
 
@@ -20,65 +20,19 @@ CometChat.init(COMETCHAT_CONSTANTS.APP_ID, appSetting).then(()=>{
   }).$mount('#app');
 })
 
+let TheRestApi = new RestApi()
 Vue.mixin({
   methods: {
     getMeta() {
-      console.log("get_meta");      
-      try {
-        if (typeof myScriptVars === "undefined") {
-          console.log("myScriptVars undefined")
-          return;
-        }
-        $.ajax({
-          method: "POST",
-          url: myScriptVars.root + "wordpress-vue-cometchat/meta/get",
-          data: { _wpnonce: myScriptVars.nonce },
-          dataType: "json",
-          success: function (data) {
-            console.log(data);
-          },
-          statusCode: {
-            403: function () {
-              console.log("Access forbidden");
-            },
-          },
-        });
-      } catch (error) {
-        console.log("Error: " + error);
-      }
+      TheRestApi.getMeta()
     },
     updateMeta(cometchat_data) {
-      console.log("update_meta");
-      console.log(cometchat_data);
-      console.log(JSON.stringify(cometchat_data));
-      
-      try {
-        if (typeof myScriptVars === "undefined") {
-          console.log("myScriptVars undefined")
-          return;
-        }
-        console.log(cometchat_data)
-        $.ajax({
-          method: "POST",
-          url: myScriptVars.root + "wordpress-vue-cometchat/meta/update",
-          data: {
-            cometchat_data: JSON.stringify(cometchat_data),
-            _wpnonce: myScriptVars.nonce,
-          },
-          dataType: "json",
-          success: function (data) {
-            console.log(data);
-          },
-          statusCode: {
-            403: function () {
-              console.log("Access forbidden");
-            },
-          },
-        });
-      } catch (error) {
-        console.log("Error: " + error);
-      }
+      TheRestApi.updateMeta(cometchat_data)
     },
+    getUserCometChat(uid) {
+      TheRestApi.getUserWith(uid)
+    },
+
   },
 })
 
