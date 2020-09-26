@@ -2,7 +2,6 @@ import Avatar from './components/Avatar';
 import CallList from './components/CallList';
 import ChatContainer from './components/ChatContainer';
 import ChatList from './components/ChatList';
-import CometChatApi from './components/CometChatApi';
 import GroupList from './components/GroupList';
 // import Home from './components/Home';
 import LeftSidebar from './components/LeftSidebar';
@@ -23,7 +22,6 @@ Avatar,
 CallList,
 ChatContainer,
 ChatList,
-CometChatApi,
 GroupList,
 LeftSidebar,
 // Home,

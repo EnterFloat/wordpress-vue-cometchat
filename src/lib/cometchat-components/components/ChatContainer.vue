@@ -6,9 +6,19 @@
         id="pageWrapper"
         :class="{ 'left-open': leftOpen, 'center-open': centerOpen, 'right-open': rightOpen }"
       >
-        <button class="get-meta-button" v-on:click="getMeta">Get meta</button>        
-        <button class="get-meta-button" v-on:click="updateMetaButton">Update meta</button>        
-        <button class="get-meta-button" v-on:click="getUser">Get user</button>        
+      <div class="buttons">
+        <a class="get-meta-button" v-on:click="getMeta">Get meta</a>        
+        <a class="get-meta-button" v-on:click="updateMetaButton">Update meta</a>        
+        <a class="get-meta-button" v-on:click="getUser">Get user</a>        
+        <form @submit="addFriends">
+          <input name="friendsToAdd" v-model="friendsToAdd" type="text">
+          <input type="submit" value="Add friends">
+        </form>
+        <form @submit="removeFriends">
+          <input name="friendsToRemove" v-model="friendsToRemove" type="text">
+          <input type="submit" value="Remove friends">
+        </form>
+      </div>
         <!--Calls and Group list-->
         <LeftSidebar />
         <!--Chat Window-->
@@ -25,7 +35,6 @@ import { CometChat } from "@cometchat-pro/chat";
 import LeftSidebar from "./LeftSidebar";
 import MessageContainer from "./MessageContainer";
 import RightSidebar from "./RightSidebar";
-import CometChatApi from "./CometChatApi";
 
 export default {
   name: "ChatContainer",
@@ -40,16 +49,30 @@ export default {
       centerOpen: false,
       rightOpen: false,
       currentUser: null,
+      friendsToAdd: '["superhero1"]',
+      friendsToRemove: '["superhero1"]',
     };
   },
   methods: {
     updateMetaButton: function () {
-      console.log("updateMetaButton");      
       this.updateMeta({status: "god!"})
     },
     getUser: function () {
-      console.log("getUser");      
-      this.getUserCometChat("superhero3")
+      this.ccGetUser("superhero3")
+    },
+    addFriends: function (e) {
+      if (!this.friendsToAdd) {
+        this.errors.push("uid required")
+      }
+      e.preventDefault();
+      this.ccAddFriends(JSON.parse(this.friendsToAdd))
+    },
+    removeFriends: function (e) {
+      if (!this.friendsToRemove) {
+        this.errors.push("uid required")
+      }
+      e.preventDefault();
+      this.ccRemoveFriends(JSON.parse(this.friendsToRemove))
     },
   },
   created() {
@@ -80,10 +103,18 @@ export default {
 </script>
 
 <style>
+  div.buttons {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+  }
   .get-meta-button {
-    height: 100px;
+    cursor: pointer;
     display: block;
-    background: red;
+    background: black;
+    color: white;
+    padding: 0.4rem;
     margin: 1rem;
   }
 @media (min-width: 320px) and (max-width: 767px) {

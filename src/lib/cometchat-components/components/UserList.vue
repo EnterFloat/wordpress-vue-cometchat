@@ -15,25 +15,39 @@
       </div>
     </div>
 
-    <div v-if="usersList.length==0" class="cometchat-message-container">
-      <p>{{messageToDisplay}}</p>
+    <div v-if="usersList.length == 0" class="cometchat-message-container">
+      <p>{{ messageToDisplay }}</p>
     </div>
 
     <div
       class="chat-contact-list-ext-wrap scroll-container"
       @scroll="handleUserScroll($event)"
-      v-else-if="usersList.length !=0"
+      v-else-if="usersList.length != 0"
     >
       <div class="contact-list-wrpr" v-for="(userRow, i) in usersList" :key="i">
-        <div class="chat-ppl-listitem clearfix" v-on:click="currentUser(userRow)">
+        <div
+          class="chat-ppl-listitem clearfix"
+          v-on:click="currentUser(userRow)"
+        >
           <span
             class="chat-contact-list-apla-ftlr"
-            v-if="(i > 0 && usersList[i-1].name.charAt(0).toUpperCase() !== userRow.name.charAt(0).toUpperCase())"
-          >{{(i > 0 && usersList[i-1].name.charAt(0).toUpperCase() === userRow.name.charAt(0).toUpperCase()) ? '' : userRow.name.substring(0, 1).toUpperCase()}}</span>
+            v-if="
+              i > 0 &&
+              usersList[i - 1].name.charAt(0).toUpperCase() !==
+                userRow.name.charAt(0).toUpperCase()
+            "
+            >{{
+              i > 0 &&
+              usersList[i - 1].name.charAt(0).toUpperCase() ===
+                userRow.name.charAt(0).toUpperCase()
+                ? ""
+                : userRow.name.substring(0, 1).toUpperCase()
+            }}</span
+          >
           <!-- <div class="chat-contact-listitem"> -->
           <Avatar :item="userRow" />
           <div class="chat-ppl-listitem-dtls">
-            <span class="chat-ppl-listitem-name">{{userRow.name}}</span>                    
+            <span class="chat-ppl-listitem-name">{{ userRow.name }}</span>
           </div>
           <!-- <div class="chat-contact-listitem-name ccl-semi-bold-text">{{userRow.name}}</div> -->
           <!-- </div> -->
@@ -47,6 +61,7 @@
 import { CometChat } from "@cometchat-pro/chat";
 import Avatar from "./Avatar";
 import Log from "./Log";
+import EventBus from "./event-bus.js";
 
 export const STRING_CONSTS = {
   STRING_MESSAGES: {
@@ -64,7 +79,7 @@ export default {
   name: "UserList",
   components: {
     Avatar,
-    Log
+    Log,
   },
   data() {
     return {
@@ -76,10 +91,12 @@ export default {
           this.usersRequest = new CometChat.UsersRequestBuilder()
             .setLimit(30)
             .setSearchKeyword(searchKey)
+            .friendsOnly(true)
             .build();
         } else {
           this.usersRequest = new CometChat.UsersRequestBuilder()
             .setLimit(30)
+            .friendsOnly(true)
             .build();
         }
         return this.usersRequest;
@@ -90,10 +107,13 @@ export default {
     };
   },
   methods: {
+    updateUsersList(data) {
+      this.usersList = []
+      this.getUserlist();
+    },
     currentUser(data) {
       this.$root.$emit("selectedUser", data);
     },
-
     getUserlist(data) {
       this.callUser(data)
         .fetchNext()
@@ -153,12 +173,11 @@ export default {
       }
     },
   },
-  console_log(item) {
-    console.log(item);
-    return true;
-  },
   created() {
-    this.getUserlist();
+    this.getUserlist();    
+  },
+  mounted() {
+    EventBus.$on("update-users-list", this.updateUsersList);
   },
 };
 </script>
