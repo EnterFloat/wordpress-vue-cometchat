@@ -10,11 +10,9 @@ function get_cometchat_meta_rest_route() {
     register_rest_route( 'wordpress-vue-cometchat/meta', '/get', [
         'methods'  => 'POST',
         'callback' => function ( $request ) {
-        $user_id = apply_filters( 'determine_current_user', false );
-        wp_set_current_user( $user_id );
-        $current_user_id = get_current_user_id();
+          $current_user_id = get_current_user_id();
             return [                
-                'get_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true) . ' id: ' . $current_user_id,                     
+                'get_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true),                     
             ];
         },
     ] );
@@ -26,14 +24,11 @@ function get_cometchat_meta_rest_route() {
      register_rest_route( 'wordpress-vue-cometchat/meta', '/update', [
          'methods'  => 'POST',
          'callback' => function ( $request ) {
-          $user_id = apply_filters( 'determine_current_user', false );
-          wp_set_current_user( $user_id );
           $current_user_id = get_current_user_id();
-          //$cometchat_data = $request->get_param('cometchat_data');          
-          // update_user_meta($current_user_id, 'cometchat_data', $cometchat_data);
+          $cometchat_data = $request->get_param('cometchat_data');
+          update_user_meta($current_user_id, 'cometchat_data', $cometchat_data);
              return [
                   'current_user_id: ' . $current_user_id,          
-                  'request: ' . $request,          
                   'update_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true),          
              ];
          },
@@ -65,6 +60,7 @@ function func_load_vuescripts() {
 	wp_register_script('wpvue_vuejs', 'https://cdn.jsdelivr.net/npm/vue/dist/vue.js');
 	wp_register_script('my_vuecode', plugin_dir_url( __FILE__ ).'dist/build.js', 'wpvue_vuejs', true );
 }
+
 //Tell WordPress to register the scripts
 add_action('wp_enqueue_scripts', 'func_load_vuescripts');
 

@@ -53,7 +53,7 @@ export default {
       friendsToRemove: '["superhero1"]',
     };
   },
-  methods: {
+  methods: {    
     updateMetaButton: function () {
       this.updateMeta({status: "god!"})
     },

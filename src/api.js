@@ -1,7 +1,7 @@
 import $ from "jquery";
 import { COMETCHAT_CONSTANTS } from "./CONSTS";
 import { CometChat } from "@cometchat-pro/chat";
-import EventBus from './lib/cometchat-components/components/event-bus.js'
+import EventBus from "./lib/cometchat-components/components/event-bus.js";
 
 export class RestApi {
   // Get id of logged in CometChat user
@@ -9,9 +9,9 @@ export class RestApi {
     return new Promise((resolve, reject) => {
       CometChat.getLoggedinUser().then(usr => {
         if (typeof usr !== "undefined") {
-          resolve(usr.uid);
+          return resolve(usr.uid);
         } else {
-          reject("Could not get user id");
+          return reject("Could not get user id");
         }
       });
     });
@@ -32,33 +32,41 @@ export class RestApi {
               request.setRequestHeader(header.key, header.value);
             });
           },
+          xhrFields: {
+            withCredentials: true
+          },
           success: function(data) {
-            resolve(data);
+            return resolve(data);
           },
           error: function(err) {
-            reject(error);
+            console.log(err);
+            return reject(err);
           },
           statusCode: {
             403: function() {
-              reject("Access forbidden");
+              return reject("Access forbidden");
             }
           }
         });
       } catch (error) {
-        reject(error);
+        return reject(error);
       }
     });
   }
   // Get cometchat_data about this user from the WP rest api
   async getMeta() {
+    console.log("myScriptVars.nonce");
     return new Promise((resolve, reject) => {
-      if (typeof myScriptVars === "undefined") reject("myScriptVars undefined");
+      console.log(myScriptVars.nonce);
+      if (typeof myScriptVars === "undefined")
+        return reject("myScriptVars undefined");
+      console.log(myScriptVars.nonce);
       this.APICall({
         callType: "POST",
         url: myScriptVars.root + "wordpress-vue-cometchat/meta/get",
-        data: JSON.stringify({
+        data: {
           _wpnonce: myScriptVars.nonce
-        })
+        }
       })
         .then(data => {
           return resolve(data);
@@ -71,14 +79,19 @@ export class RestApi {
   // Update cometchat_data about this user from WP rest api
   async updateMeta(cometchat_data) {
     return new Promise((resolve, reject) => {
-      if (typeof myScriptVars === "undefined") reject("myScriptVars undefined");
+      console.log("myScriptVars.nonce");
+      console.log(myScriptVars.nonce);
+      if (typeof myScriptVars === "undefined")
+        return reject("myScriptVars undefined");
+      console.log(myScriptVars.nonce);
+      console.log("Passed myScriptVars");
       this.APICall({
         callType: "POST",
         url: myScriptVars.root + "wordpress-vue-cometchat/meta/update",
-        data: JSON.stringify({
-          cometchat_data: JSON.stringify(cometchat_data),
+        data: {
+          cometchat_data: cometchat_data,
           _wpnonce: myScriptVars.nonce
-        })
+        }
       })
         .then(data => {
           return resolve(data);
@@ -129,7 +142,7 @@ export class RestApi {
           });
         })
         .then(data => {
-          EventBus.$emit('update-users-list', data)
+          EventBus.$emit("update-users-list", data);
           return resolve(data);
         })
         .catch(() => {
@@ -155,7 +168,7 @@ export class RestApi {
           });
         })
         .then(data => {
-          EventBus.$emit('update-users-list', data)
+          EventBus.$emit("update-users-list", data);
           return resolve(data);
         })
         .catch(() => {
