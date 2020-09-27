@@ -11,7 +11,8 @@
         </div>
 
         <div class="cc1-chat-win-user-name-wrap">
-          <h6 class="cc1-chat-win-user-name">{{userData.name}}</h6>
+          <h6 v-if="userData.metadata" :class="userData.metadata.gender" class="cc1-chat-win-user-name">{{userData.name}}</h6>
+          <h6 v-else class="cc1-chat-win-user-name">{{userData.name}}</h6>
           <span
             class="cc1-chat-win-user-status ccl-blue-color"
             v-if="userData.status !=='offline'"
@@ -138,6 +139,13 @@ export default {
   text-align: center;
   border-radius: 50%;
   padding: 5px;
+}
+
+.male {
+  color: #1871c9;
+}
+.female {
+  color: #db3a16;
 }
 
 .back-btn {

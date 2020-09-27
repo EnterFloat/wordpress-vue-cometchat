@@ -28,6 +28,7 @@
         <div
           class="chat-ppl-listitem clearfix"
           v-on:click="currentUser(userRow)"
+          v-if="userRow.metadata"          
         >
           <span
             class="chat-contact-list-apla-ftlr"
@@ -44,13 +45,43 @@
                 : userRow.name.substring(0, 1).toUpperCase()
             }}</span
           >
-          <!-- <div class="chat-contact-listitem"> -->
+          <!-- <span v-if="
+             userRow.metadata
+          "
+          :class="userRow.metadata.gender">{{userRow.metadata.gender}}</span>           -->
+          <Avatar :item="userRow" />
+          <div class="chat-ppl-listitem-dtls">
+            <span :class="userRow.metadata.gender" class="chat-ppl-listitem-name">{{ userRow.name }}</span>
+          </div>          
+        </div>
+        <div
+          class="chat-ppl-listitem clearfix"
+          v-on:click="currentUser(userRow)"
+          v-else
+        >
+          <span
+            class="chat-contact-list-apla-ftlr"
+            v-if="
+              i > 0 &&
+              usersList[i - 1].name.charAt(0).toUpperCase() !==
+                userRow.name.charAt(0).toUpperCase()
+            "
+            >{{
+              i > 0 &&
+              usersList[i - 1].name.charAt(0).toUpperCase() ===
+                userRow.name.charAt(0).toUpperCase()
+                ? ""
+                : userRow.name.substring(0, 1).toUpperCase()
+            }}</span
+          >
+          <!-- <span v-if="
+             userRow.metadata
+          "
+          :class="userRow.metadata.gender">{{userRow.metadata.gender}}</span>           -->
           <Avatar :item="userRow" />
           <div class="chat-ppl-listitem-dtls">
             <span class="chat-ppl-listitem-name">{{ userRow.name }}</span>
-          </div>
-          <!-- <div class="chat-contact-listitem-name ccl-semi-bold-text">{{userRow.name}}</div> -->
-          <!-- </div> -->
+          </div>          
         </div>
       </div>
     </div>
@@ -186,6 +217,13 @@ export default {
 .chat-contact-list-apla-ftlr {
   position: absolute;
   top: 0;
+}
+
+.male {
+  color: #1871c9;
+}
+.female {
+  color: #db3a16;
 }
 
 .chat-ppl-listitem-dtls {

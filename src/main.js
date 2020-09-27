@@ -24,7 +24,7 @@ CometChat.init(COMETCHAT_CONSTANTS.APP_ID, appSetting).then(() => {
 
 let TheRestApi = new RestApi();
 Vue.mixin({
-  methods: {    
+  methods: {
     getMeta() {
       TheRestApi.getMeta()
         .then(data => {
@@ -43,14 +43,8 @@ Vue.mixin({
           console.log(error);
         });
     },
-    ccGetUser(uid) {
-      CometChat.getLoggedinUser()
-        .then(usr => {
-          if (typeof usr !== "undefined") {
-            console.log(usr);
-            return TheRestApi.ccGetUser(usr.uid);
-          }
-        })
+    ccGetUser() {
+      TheRestApi.ccGetUser()
         .then(data => {
           console.log(data);
         })
@@ -58,8 +52,8 @@ Vue.mixin({
           console.log(error);
         });
     },
-    ccAddFriends(uids) {      
-        TheRestApi.ccAddFriends(uids)
+    ccUpdateUser(metadata) {
+      TheRestApi.ccUpdateUser(metadata)
         .then(data => {
           console.log(data);
         })
@@ -67,8 +61,8 @@ Vue.mixin({
           console.log(error);
         });
     },
-    ccRemoveFriends(uids) {      
-        TheRestApi.ccRemoveFriends(uids)
+    ccAddFriends(uids) {
+      TheRestApi.ccAddFriends(uids)
         .then(data => {
           console.log(data);
         })
@@ -76,6 +70,15 @@ Vue.mixin({
           console.log(error);
         });
     },
+    ccRemoveFriends(uids) {
+      TheRestApi.ccRemoveFriends(uids)
+        .then(data => {
+          console.log(data);
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    }
   }
 });
 

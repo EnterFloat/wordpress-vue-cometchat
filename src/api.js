@@ -122,6 +122,30 @@ export class RestApi {
         });
     });
   }
+  // Update CometChat user
+  async ccUpdateUser(metadata) {
+    return new Promise((resolve, reject) => {
+      this.getUserId()
+        .then(uid => {
+          return this.APICall({
+            callType: "PUT",
+            url: "https://api-eu.cometchat.io/v2.0/users/" + uid,
+            data: JSON.stringify({ metadata: metadata }),
+            headers: [
+              { key: "appId", value: COMETCHAT_CONSTANTS.APP_ID },
+              { key: "apiKey", value: COMETCHAT_CONSTANTS.REST_API_KEY },
+              { key: "Content-Type", value: "application/json" }
+            ]
+          });
+        })
+        .then(data => {
+          return resolve(data);
+        })
+        .catch(() => {
+          return reject("error");
+        });
+    });
+  }
   // Add friend
   async ccAddFriends(uids) {
     return new Promise((resolve, reject) => {

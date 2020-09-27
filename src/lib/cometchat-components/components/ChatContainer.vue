@@ -10,6 +10,11 @@
         <a class="get-meta-button" v-on:click="getMeta">Get meta</a>        
         <a class="get-meta-button" v-on:click="updateMetaButton">Update meta</a>        
         <a class="get-meta-button" v-on:click="getUser">Get user</a>        
+        <a class="get-meta-button" v-on:click="updateUser">Update user</a>        
+        <form @submit="updateUser">
+          <input name="userMetadata" v-model="userMetadata" type="text">
+          <input type="submit" value="Update metadata">
+        </form>
         <form @submit="addFriends">
           <input name="friendsToAdd" v-model="friendsToAdd" type="text">
           <input type="submit" value="Add friends">
@@ -51,6 +56,7 @@ export default {
       currentUser: null,
       friendsToAdd: '["superhero1"]',
       friendsToRemove: '["superhero1"]',
+      userMetadata: '{"gender": "male"}',
     };
   },
   methods: {    
@@ -58,7 +64,14 @@ export default {
       this.updateMeta({status: "god!"})
     },
     getUser: function () {
-      this.ccGetUser("superhero3")
+      this.ccGetUser()
+    },
+    updateUser: function (e) {
+      if (!this.userMetadata) {
+        this.errors.push("userMetadata required")
+      }
+      e.preventDefault();
+      this.ccUpdateUser(JSON.parse(this.userMetadata))
     },
     addFriends: function (e) {
       if (!this.friendsToAdd) {
