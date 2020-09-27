@@ -14,7 +14,7 @@ function get_cometchat_meta_rest_route() {
         wp_set_current_user( $user_id );
         $current_user_id = get_current_user_id();
             return [                
-                'get_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true) . ' id: ' . $current_user_id,                     
+                'get_user_meta: ' . json_encode(get_user_meta($current_user_id, 'cometchat_data', true)) . ' id: ' . $current_user_id,                     
             ];
         },
     ] );
@@ -29,12 +29,11 @@ function get_cometchat_meta_rest_route() {
           $user_id = apply_filters( 'determine_current_user', false );
           wp_set_current_user( $user_id );
           $current_user_id = get_current_user_id();
-          //$cometchat_data = $request->get_param('cometchat_data');          
-          // update_user_meta($current_user_id, 'cometchat_data', $cometchat_data);
+          $cometchat_data = $request->get_param('cometchat_data');          
+          update_user_meta($current_user_id, 'cometchat_data', $cometchat_data);
              return [
                   'current_user_id: ' . $current_user_id,          
-                  'request: ' . $request,          
-                  'update_user_meta: ' . get_user_meta($current_user_id, 'cometchat_data', true),          
+                  'update_user_meta: ' . json_encode(get_user_meta($current_user_id, 'cometchat_data', true)),          
              ];
          },
      ] );

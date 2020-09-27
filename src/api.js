@@ -31,10 +31,7 @@ export class RestApi {
             options.headers.forEach(header => {
               request.setRequestHeader(header.key, header.value);
             });
-          },
-          xhrFields: {
-            withCredentials: true
-          },
+          },          
           success: function(data) {
             return resolve(data);
           },
