@@ -52,9 +52,7 @@ export class RestApi {
   }
   // Get cometchat_data about this user from the WP rest api
   async getMeta() {
-    console.log("myScriptVars.nonce");
     return new Promise((resolve, reject) => {
-      console.log(myScriptVars.nonce);
       if (typeof myScriptVars === "undefined")
         return reject("myScriptVars undefined");
       console.log(myScriptVars.nonce);
@@ -76,11 +74,8 @@ export class RestApi {
   // Update cometchat_data about this user from WP rest api
   async updateMeta(cometchat_data) {
     return new Promise((resolve, reject) => {
-      console.log("myScriptVars.nonce");
-      console.log(myScriptVars.nonce);
       if (typeof myScriptVars === "undefined")
-        return reject("myScriptVars undefined");
-      console.log(myScriptVars.nonce);
+      return reject("myScriptVars undefined");
       console.log("Passed myScriptVars");
       this.APICall({
         callType: "POST",

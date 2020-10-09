@@ -1,92 +1,27 @@
 <template>
   <div>
-    <div style="text-align: center; display: flex;" v-if="!showloader">
-      <div style="margin: auto;">
-        <div style=" width: 150px; margin: auto;">
-          <img
-            style="max-width: 100%; max-height: 100%;"
-            src="https://www.cometchat.com/wp-content/uploads/2018/03/Logo-C-White.png"
-            alt=""
-          />
-        </div>
-
-        <p
-          style="margin:auto; font-size: 42px; color: #2da7ff; font-weight: 500;line-height: 54px;"
-        >
-          Kitchen Sink App
-        </p>
-
-        <p style="margin:auto; padding: 10px;">
-          Login with one of our sample users
-        </p>
-        <div style="display: flex; width: 100%;flex-wrap: wrap; margin: auto;">
-          <div class="userSelector">
-            <img 
-              src="https://data-us.cometchat.io/assets/images/avatars/ironman.png"
-              style="margin: 5px; max-width: 41px;"  />
-            <p style="margin: auto;">
-              <a href="javascript:;" v-on:click="login($event,'superhero1')"> superhero1</a>
-            </p>
-          </div>
-          <div class="userSelector">
-            <img 
-              src="https://data-us.cometchat.io/assets/images/avatars/captainamerica.png"
-              style="margin: 5px; max-width: 41px;"  />
-            <p style="margin: auto;">
-              <a href="javascript:;" v-on:click="login($event,'superhero2')">superhero2</a>
-            </p>
-          </div>
-          <div class="userSelector">
-            <img 
-              src="https://data-us.cometchat.io/assets/images/avatars/spiderman.png"
-              style="margin: 5px; max-width: 41px;"  />
-            <p style="margin: auto;">
-              <a href="javascript:;" v-on:click="login($event,'superhero3')">superhero3</a>
-            </p>
-          </div>
-          <div class="userSelector">
-            <img 
-              src="https://data-us.cometchat.io/assets/images/avatars/wolverine.png"
-              style="margin: 5px; max-width: 41px;"  />
-            <p style="margin: auto;">
-              <a href="javascript:;" v-on:click="login($event,'superhero4')">superhero4</a>
-            </p>
-          </div>
-        </div>
-
-        <p style="margin: auto; padding: 10px;">Login continue with UID</p>
-
-        <input
-          style="margin: auto; padding: 10px;"
-          v-model="uid"
-          type="text"
-          placeholder="Enter your UID here"
-        />
-
-        <div class="loginButton" v-on:click="login($event,uid)">Login</div>
-      </div>
-      
-    </div>
-    <Loader v-else-if="showloader" />
+    <!-- <Loader /> -->
+    <h1>Du er logget ud</h1>
+    <p>Log ind på Blinddaters og genlæs denne side</p>
   </div>
-
 </template>
 <script>
-import { CometChat } from '@cometchat-pro/chat';
-import { COMETCHAT_CONSTANTS } from '../CONSTS';
-import Loader from './Loader'
+import { CometChat } from "@cometchat-pro/chat";
+import { COMETCHAT_CONSTANTS } from "../CONSTS";
+import Loader from "./Loader";
 
 export default {
   name: "AppHomeComponent",
   components: {
-    Loader
+    Loader,
   },
   data() {
     return {
       // showUi: false,
       showloader: false,
-      uid: null
-    }
+      uid: null,
+      reloadIntervalLoggedOut: null,
+    };
   },
   methods: {
     login(event, uid) {
@@ -99,29 +34,36 @@ export default {
         this.uid = uid;
       }
 
-      CometChat.login(this.uid, COMETCHAT_CONSTANTS.API_KEY).then((user)=>{
-        console.log('current log : ', user);
-        location.href = '#/menu';
+      CometChat.login(this.uid, COMETCHAT_CONSTANTS.API_KEY).then((user) => {
+        console.log("current log : ", user);
+        location.href = "/#";
         this.showloader = false;
       });
-
-    }
+    },
+    loginAndLoadDataLoggedOut() {
+      console.log("loginAndLoadDataLoggedOut");
+      this.handleAuth()
+        .then((success) => {
+          console.log("Success: " + success);
+          // location.href = "#/";
+          this.showloader = false;
+        })
+        .catch((error) => {
+          console.log("Error: " + error);
+        });
+    },
   },
-  created() {
-    CometChat.getLoggedinUser().then(user => {
-      if (user) {
-        location.href = '#/menu';
-        this.uid = user.getUid();
-      } else {
-        this.showloader = false;
-      }
-    }, error => {
-      console.log('yes here', error);
-      this.showloader = false;
-    });
-
-  }
-}
+  beforeRouteLeave(to, from, next) {
+    clearInterval(this.reloadIntervalLoggedOut);
+    next();
+  },
+  mounted() {
+    this.loginAndLoadDataLoggedOut();
+    this.reloadIntervalLoggedOut = setInterval(() => {
+      this.loginAndLoadDataLoggedOut();
+    }, 10000);    
+  },
+};
 </script>
 
 <style scoped>
@@ -146,7 +88,7 @@ export default {
 }
 
 input {
-  border: 2px solid #AAA;
+  border: 2px solid #aaa;
   width: 300px;
   height: 40px;
   border-radius: 10px;
@@ -172,5 +114,4 @@ input {
   /* color: darken($color: white, $amount: 5%);
   background: darken($color: #333, $amount: 20%); */
 }
-
 </style>

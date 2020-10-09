@@ -1,29 +1,41 @@
 <template>
   <div>
+    <Loader v-if="showmainloader" />
     <div class="page-wrapper">
       <div
         class="page-int-wrapper"
         id="pageWrapper"
-        :class="{ 'left-open': leftOpen, 'center-open': centerOpen, 'right-open': rightOpen }"
+        :class="{
+          'left-open': leftOpen,
+          'center-open': centerOpen,
+          'right-open': rightOpen,
+        }"
       >
-      <div class="buttons">
-        <a class="get-meta-button" v-on:click="getMeta">Get meta</a>        
-        <a class="get-meta-button" v-on:click="updateMetaButton">Update meta</a>        
-        <a class="get-meta-button" v-on:click="getUser">Get user</a>        
-        <a class="get-meta-button" v-on:click="updateUser">Update user</a>        
-        <form @submit="updateUser">
-          <input name="userMetadata" v-model="userMetadata" type="text">
-          <input type="submit" value="Update metadata">
-        </form>
-        <form @submit="addFriends">
-          <input name="friendsToAdd" v-model="friendsToAdd" type="text">
-          <input type="submit" value="Add friends">
-        </form>
-        <form @submit="removeFriends">
-          <input name="friendsToRemove" v-model="friendsToRemove" type="text">
-          <input type="submit" value="Remove friends">
-        </form>
-      </div>
+        <div class="buttons">
+          <a class="get-meta-button" v-on:click="getMeta">Get meta</a>
+          <a class="get-meta-button" v-on:click="updateMetaButton"
+            >Update meta</a
+          >
+          <a class="get-meta-button" v-on:click="getUser">Get user</a>
+          <a class="get-meta-button" v-on:click="updateUser">Update user</a>
+          <form @submit="updateUser">
+            <input name="userMetadata" v-model="userMetadata" type="text" />
+            <input type="submit" value="Update metadata" />
+          </form>
+          <form @submit="addFriends">
+            <input name="friendsToAdd" v-model="friendsToAdd" type="text" />
+            <input type="submit" value="Add friends" />
+          </form>
+          <form @submit="removeFriends">
+            <input
+              name="friendsToRemove"
+              v-model="friendsToRemove"
+              type="text"
+            />
+            <input type="submit" value="Remove friends" />
+          </form>
+          <a class="get-meta-button" v-on:click="logout">Logout {{currentUser}}</a>
+        </div>
         <!--Calls and Group list-->
         <LeftSidebar />
         <!--Chat Window-->
@@ -40,10 +52,13 @@ import { CometChat } from "@cometchat-pro/chat";
 import LeftSidebar from "./LeftSidebar";
 import MessageContainer from "./MessageContainer";
 import RightSidebar from "./RightSidebar";
+import Loader from "./Loader";
+import { COMETCHAT_CONSTANTS } from "../../../CONSTS";
 
 export default {
   name: "ChatContainer",
   components: {
+    Loader,
     LeftSidebar,
     MessageContainer,
     RightSidebar,
@@ -57,48 +72,118 @@ export default {
       friendsToAdd: '["superhero1"]',
       friendsToRemove: '["superhero1"]',
       userMetadata: '{"gender": "male"}',
+      showmainloader: true,
+      uid: null,
+      reloadIntervalChat: null,
     };
   },
-  methods: {    
+  methods: {
     updateMetaButton: function () {
-      this.updateMeta({status: "god!"})
+      this.updateMeta({
+        cometchat_id: "",
+        users_to_unblock: {
+          221: {
+            UID: "221",
+            name: "jack-black2",
+            avatarURL: "",
+            profileURL:
+              "https://dev.blinddaters.dk/profil-side/?profile_id=221",
+            role: "",
+            unblocked: false,
+            cometchat_id: "",
+          },
+        },
+      })
+        .then((data) => {
+          console.log(data);
+        })
+        .catch(() => {
+          console.log(data);
+        });
     },
     getUser: function () {
       this.ccGetUser()
+        .then((data) => {
+          this.currentUser = data.data.uid
+        })
+        .catch(() => {
+          console.log(data);
+        });
     },
     updateUser: function (e) {
       if (!this.userMetadata) {
-        this.errors.push("userMetadata required")
+        this.errors.push("userMetadata required");
       }
       e.preventDefault();
       this.ccUpdateUser(JSON.parse(this.userMetadata))
+        .then((data) => {
+          console.log(data);
+        })
+        .catch(() => {
+          console.log(data);
+        });
     },
     addFriends: function (e) {
       if (!this.friendsToAdd) {
-        this.errors.push("uid required")
+        this.errors.push("uid required");
       }
       e.preventDefault();
       this.ccAddFriends(JSON.parse(this.friendsToAdd))
+        .then((data) => {
+          console.log(data);
+        })
+        .catch(() => {
+          console.log(data);
+        });
     },
     removeFriends: function (e) {
       if (!this.friendsToRemove) {
-        this.errors.push("uid required")
+        this.errors.push("uid required");
       }
       e.preventDefault();
       this.ccRemoveFriends(JSON.parse(this.friendsToRemove))
+        .then((data) => {
+          console.log(data);
+        })
+        .catch(() => {
+          console.log(data);
+        });
+    },
+    logout: function () {
+      console.log("Logging out");
+      CometChat.logout()
+        .then(() => {
+          console.log("Logged out logout button");
+          location.href = "#/signed-out";
+        })
+        .catch((error) => {
+          console.log("Couldn't log out error: " + error);
+          location.href = "#/signed-out";
+        });
+    },
+    loginAndLoadDataChat() {
+      console.log("loginAndLoadDataChat");
+      this.handleAuth()
+        .then((success) => {
+          console.log("Success: " + success);
+          this.showmainloader = false;
+        })
+        .catch((error) => {
+          // location.href = "#/signed-out";
+          console.log("Error: " + error);
+        });      
     },
   },
+  beforeRouteLeave(to, from, next) {
+    clearInterval(this.reloadIntervalChat);
+    next();
+  },
   created() {
-    CometChat.getLoggedinUser().then(
-      (user) => {
-        if (user) {
-          this.currentUser = user;
-        }
-      },
-      (error) => {
-        console.log("yes here", error);
-      }
-    );
+    this.getUser()
+    this.loginAndLoadDataChat();
+    this.reloadIntervalChat = setInterval(() => {
+      this.loginAndLoadDataChat()
+    }, 1000000);
   },
 
   mounted() {
@@ -116,22 +201,21 @@ export default {
 </script>
 
 <style>
-  div.buttons {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
-  }
-  .get-meta-button {
-    cursor: pointer;
-    display: block;
-    background: black;
-    color: white;
-    padding: 0.4rem;
-    margin: 1rem;
-  }
+div.buttons {
+  display: none; /* display: flex */
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+}
+.get-meta-button {
+  cursor: pointer;
+  display: block;
+  background: black;
+  color: white;
+  padding: 0.4rem;
+  margin: 1rem;
+}
 @media (min-width: 320px) and (max-width: 767px) {
-
   .page-int-wrapper .ccl-left-panel,
   .page-int-wrapper .ccl-center-panel,
   .page-int-wrapper .ccl-right-panel {

@@ -14,9 +14,9 @@ import ChatList from './lib/cometchat-components/components/ChatList';
 import GroupList from './lib/cometchat-components/components/GroupList'
 
 const routes = [
-    { path: '/', component: AppHomeComponent },
+    { path: '/signed-out', component: AppHomeComponent },
     { path: '/menu', component: AppNavigationComponent },
-    { path: '/embeded-app', component: ChatContainer },
+    { path: '/', component: ChatContainer },
 
     { path: '/conversation-screen', component: ConversationScreen },
     { path: '/group-screen', component: GroupScreen },

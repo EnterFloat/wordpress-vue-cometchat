@@ -66,6 +66,13 @@
                 class="ccl-dtls-section-listitem-link ccl-red-color ccl-semi-bold-text"
               >Report</a>
             </div>
+            <div class="ccl-dtls-section-listitem">
+              <a
+                v-on:click="logout"
+                href=""
+                class="ccl-dtls-section-listitem-link ccl-red-color ccl-semi-bold-text"
+              >Log ud</a>
+            </div>
           </div>
         </div>
 
@@ -141,6 +148,10 @@ export default {
         el.classList.add("center-open");
         this.isMenu = false;
       }      
+    },
+    logout() {
+      CometChat.logout()
+      location.href = "/#signed-out"
     }
 
 
