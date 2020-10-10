@@ -2,10 +2,10 @@
   <div>
     <!-- <div class="ccl-left-panel-srch-wrap"> -->
     <div class="ccl-left-panel-head-wrap">
-      <div class="ccl-left-panel-srch-inpt-wrap">
+      <!-- <div class="ccl-left-panel-srch-inpt-wrap">
         <input autocomplete="off" class="ccl-left-panel-srch font-15 ccl-secondary-color" placeholder="Search" type="text" maxlength="200" @input="onSearchChange($event)" />
         <input id="searchButton" type="button" class="search-btn" />
-      </div>
+      </div> -->
     </div>
 
     <div v-if="grousList.length==0" class="cometchat-message-container">
@@ -72,6 +72,7 @@ export default {
   },
   methods: {
     currentGroup(data) {
+      console.log(data)
       this.$root.$emit('selectedUser', data);
     },
     getGroupList(data) {

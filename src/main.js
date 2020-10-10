@@ -5,6 +5,8 @@ import routes from "./routes";
 import { CometChat } from "@cometchat-pro/chat";
 import { COMETCHAT_CONSTANTS } from "./CONSTS";
 import { RestApi } from "./api";
+import EventBus from "./lib/cometchat-components/components/event-bus.js";
+import UUID from "vue-uuid";
 // import { resolve } from "core-js/fn/promise";
 
 Vue.config.productionTip = false;
@@ -16,6 +18,7 @@ var appSetting = new CometChat.AppSettingsBuilder()
 
 CometChat.init(COMETCHAT_CONSTANTS.APP_ID, appSetting).then(() => {
   Vue.use(VueRouter);
+  Vue.use(UUID);
   const router = new VueRouter({
     routes
   });
@@ -35,7 +38,9 @@ Vue.mixin({
             return resolve(data);
           })
           .catch(error => {
-            return reject(error);
+            return reject(
+              '{"blinddaters_id":1,"user_meta":{"cometchat_id":"superhero1","users_to_unblock":{"221":{"UID":"221","name":"jack-black2","avatarURL":"","profileURL":"https://dev.blinddaters.dk/profil-side/?profile_id=221","role":"","unblocked":"false","cometchat_id":""}}}}'
+            ); // reject
           });
       });
     },
@@ -50,9 +55,42 @@ Vue.mixin({
           });
       });
     },
+    ccCreateUser(data) {
+      return new Promise((resolve, reject) => {
+        TheRestApi.ccCreateUser(data)
+          .then(data => {
+            return resolve(data);
+          })
+          .catch(error => {
+            return reject(error);
+          });
+      });
+    },
     ccGetUser() {
       return new Promise((resolve, reject) => {
         TheRestApi.ccGetUser()
+          .then(data => {
+            return resolve(data);
+          })
+          .catch(error => {
+            return reject(error);
+          });
+      });
+    },
+    ccGetGroup(guid) {
+      return new Promise((resolve, reject) => {
+        TheRestApi.ccGetGroup(guid)
+          .then(data => {
+            return resolve(data);
+          })
+          .catch(error => {
+            return reject(error);
+          });
+      });
+    },
+    ccJoinGroup(guid, uid) {
+      return new Promise((resolve, reject) => {
+        TheRestApi.ccJoinGroup(guid, uid)
           .then(data => {
             return resolve(data);
           })
@@ -94,10 +132,42 @@ Vue.mixin({
           });
       });
     },
-    loadBlinddatersData() {
-      console.log("loadBlinddatersData");
-      location.href = "/#";      
-      // alert("loadBlinddatersData")
+    loadBlinddatersData(blinddaters_data) {
+      return new Promise((resolve, reject) => {
+        console.log("loadBlinddatersData:");
+        console.log(blinddaters_data);
+        if (blinddaters_data.user_meta.users_to_unblock) {
+          let users_to_befriend = [];
+          for (var key in blinddaters_data.user_meta.users_to_unblock) {
+            users_to_befriend.push(
+              blinddaters_data.user_meta.users_to_unblock[key]["UID"]
+            );
+            console.log(
+              blinddaters_data.user_meta.users_to_unblock[key]["UID"]
+            );
+          }
+          console.log(users_to_befriend);
+          this.ccAddFriends(users_to_befriend)
+            .then(success => {
+              EventBus.$emit("update-users-list", success);
+              console.log("Added friend(s):");
+              console.log(success)
+              return resolve(success);
+            })
+            .catch(error => {
+              console.log(error);
+              return reject(error);
+            });
+        }
+
+        // let something_changed = false;
+        // if (something_changed) {
+        //   if (this.$route.name == "ChatContainer") this.$router.go();
+        // } else {
+        //   console.log("Nothing new");
+        // }
+        // alert("loadBlinddatersData")
+      });
     },
     getMetaPlaceholder() {
       return new Promise((resolve, reject) => {
@@ -105,7 +175,11 @@ Vue.mixin({
         if (logged_in) {
           return resolve({ cometchat_id: "superhero3" });
         } else {
-          return reject({ should_reload: false, message: "Not signed in on Blinddaters"});
+          return reject({
+            should_reload: false,
+            component_name: "AppLoggedOut",
+            message: "Not signed in on Blinddaters"
+          });
         }
       });
     },
@@ -113,14 +187,15 @@ Vue.mixin({
       return new Promise((resolve, reject) => {
         CometChat.login(cometchat_id, COMETCHAT_CONSTANTS.API_KEY)
           .then(() => {
-            console.log("Logged in again");
+            console.log("Logged in again ccSignIn");
             return resolve({
               message: "Signed in correctly",
+              component_name: "ChatContainer",
               should_reload: true
             });
           })
           .catch(() => {
-            reject(
+            return reject(
               "Couldn't re sign in CometChat user with id: " + cometchat_id
             );
           });
@@ -139,38 +214,37 @@ Vue.mixin({
             console.log("Logged in again");
             return resolve({
               message: "Signed in correctly",
+              component_name: "ChatContainer",
               should_reload: true
             });
           })
           .catch(() => {
-            reject(
+            return reject(
               "Couldn't re sign in CometChat user with id: " + cometchat_id
             );
           });
       });
     },
-    handleAuth() {
+    handleAuth(is_guest) {
       console.log(
         "Going to make sure, the right user is logged in. Otherwise logging out. First: check if we can get data from blinddaters."
       );
       return new Promise((resolve, reject) => {
         let blinddaters_data = {};
-        this.getMetaPlaceholder() // Should be: this.getMeta()
+        this.getMeta() // Should be: this.getMeta()
           .then(data => {
-            blinddaters_data = data;
-            return CometChat.getLoggedinUser();
-            // console.log(
-            //   "Got data from Blinddaters. Checking if user is signed in."
-            // );
-            // if (data["logged_in"] == true) {
-            //   console.log(
-            //     "User is signed in on Blinddaters. Getting signed in CometChat user."
-            //   );
-            //   return CometChat.getLoggedinUser();
-            // } else if (data["logged_in"] == false) {
-            //   console.log("User is not signed in on Blinddaters. Signing out.");
-            //   return reject("User not signed in on Blinddaters.");
-            // }
+            blinddaters_data = JSON.parse(data);
+            console.log(JSON.stringify(blinddaters_data));
+            console.log(blinddaters_data);
+            if (blinddaters_data.user_meta.cometchat_id == "") {
+              throw "No associated CometChat User";
+            } else {
+              console.log(blinddaters_data);
+              return CometChat.getLoggedinUser();
+              // return reject("No associated CometChat User")
+              // new_user = {uid: "cometchat_" + String(blinddaters_data.blinddaters_id), name: blinddaters_data.user_meta.name, avatar: blinddaters_data.user_meta.avatar}
+              // this.ccCreateUser()
+            }
           })
           .then(user => {
             if (user) {
@@ -179,46 +253,105 @@ Vue.mixin({
                   user.uid +
                   ". Check if matches user from blinddaters"
               );
-              if (user.uid == blinddaters_data["cometchat_id"]) {
-                console.log("It matches. We are done.");
-                return resolve("Signed in correctly");
+              if (user.uid == blinddaters_data.user_meta.cometchat_id) {
+                console.log({
+                  component_name: "ChatContainer",
+                  message: "It matches. We are done."
+                });
+                return {
+                  component_name: "ChatContainer",
+                  should_reload: false,
+                  message: "It matches. We are done."
+                };
               } else {
                 console.log("It doesn't match. Logging out");
-                return this.ccReSignIn(blinddaters_data["cometchat_id"]);
+                return this.ccReSignIn(blinddaters_data.user_meta.cometchat_id);
               }
             } else {
               console.log(
                 "User not logged in on CometChat. Signing in with id: " +
-                  blinddaters_data["cometchat_id"]
+                  blinddaters_data.user_meta.cometchat_id
               );
-              return this.ccSignIn(blinddaters_data["cometchat_id"]);
+              return this.ccSignIn(blinddaters_data.user_meta.cometchat_id);
             }
           })
-          .then(success => {
-            this.loadBlinddatersData();
-            if (success) {
-              if ("should_reload" in success) {
-                if (success["should_reload"] == true) {
-                  console.log("should_reload");
-                  location.reload();
+          .then(success => {            
+            console.log("success");
+            console.log(success);
+            this.loadBlinddatersData(blinddaters_data).then(data => {
+              if (success) {
+                if ("component_name" in success) {
+                  if ("should_reload" in success) {
+                    console.log(
+                      "This router name: " + String(this.$route.name)
+                    );
+                    console.log(
+                      "should_reload: " + String(success["should_reload"])
+                    );
+                    console.log(
+                      "component_name: " + String(success["component_name"])
+                    );
+                    if (
+                      this.$route.name == success["component_name"] &&
+                      success["should_reload"] == true
+                    ) {
+                      this.$router.go();
+                    } else if (
+                      success["component_name"] != "stay" &&
+                      this.$route.name != success["component_name"]
+                    ) {
+                      this.$router.push({
+                        name: success["component_name"]
+                      });
+                    }
+                  }
                 }
               }
-            }
-            return resolve("Signed in correctly");
+              console.log("Success is_guest: " + is_guest)
+              if (is_guest) {
+                return reject("No guest needed.")
+              }
+              return resolve("Signed in correctly");
+            }).catch(error => {
+              throw "Couldn't update friends in CometChat"
+            })
           })
           .catch(error => {
+            console.log("is_guest: " + String(is_guest))
+            if (is_guest) {
+              return resolve("A new user is needed.")
+            }
             console.log("An error occured: ");
-            console.log(error)
+            console.log(error);
             CometChat.getLoggedinUser().then(user => {
               console.log(user);
               if (user) {
-                CometChat.logout();
+                CometChat.logout().then(() => {
+                  if (this.$route.name != "AppLoggedOut") {
+                    this.$router.push({
+                      name: "AppLoggedOut"
+                    });
+                  }
+                  return reject("Error signing in");
+                });
+              } else {
+                console.log("User null");
+                console.log("this.$route.name: " + String(this.$route.name));
+                if (this.$route.name != "AppLoggedOut") {
+                  console.log("Pushing to AppLoggedOut");
+                  this.$router.push({
+                    name: "AppLoggedOut"
+                  });
+                }
               }
+              return reject("Error signing in");
             });
-            if (!location.href == "/#signed-out") {
-              location.href = "/#signed-out";              
-            }
-            return reject("Error signing in");
+            // console.log(this.$router)
+            // if (!this.$route.name == "AppLoggedOut") {
+            //   this.$router.push({
+            //     name: "AppLoggedOut",
+            //   });
+            // }
           });
       });
     },

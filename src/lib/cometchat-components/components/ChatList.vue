@@ -4,7 +4,19 @@
     <div class="chat-ppl-list-wrap" v-for="(chatRow, index) in chatList" :key="index">
       <div class="chat-ppl-listitem clearfix" v-on:click="currentUser(chatRow, index)">
         <Avatar :item="chatRow.conversationWith" />
-        <div class="chat-ppl-listitem-dtls">
+        <div class="chat-ppl-listitem-dtls" v-if="chatRow.conversationWith.metadata">
+          <div v-if="chatRow.conversationWith.metadata.gender">
+            <span :class="chatRow.conversationWith.metadata.gender" class="chat-ppl-listitem-name">{{chatRow.conversationWith.name}}</span>
+            <p class="chat-ppl-listitem-txt ccl-secondary-color" v-if="chatRow.lastMessage">{{chatRow.lastMessage.data.text}}</p>
+            <p class="chat-ppl-listitem-space" v-else-if="!chatRow.lastMessage" > &nbsp; </p>
+          </div>
+          <div v-else>
+            <span :class="chatRow.conversationWith.metadata.gender" class="chat-ppl-listitem-name">{{chatRow.conversationWith.name}}</span>
+            <p class="chat-ppl-listitem-txt ccl-secondary-color" v-if="chatRow.lastMessage">{{chatRow.lastMessage.data.text}}</p>
+            <p class="chat-ppl-listitem-space" v-else-if="!chatRow.lastMessage" > &nbsp; </p>
+          </div>
+        </div>
+        <div class="chat-ppl-listitem-dtls" v-else>
           <span class="chat-ppl-listitem-name">{{chatRow.conversationWith.name}}</span>
           <p class="chat-ppl-listitem-txt ccl-secondary-color" v-if="chatRow.lastMessage">{{chatRow.lastMessage.data.text}}</p>
           <p class="chat-ppl-listitem-space" v-else-if="!chatRow.lastMessage" > &nbsp; </p>
@@ -108,6 +120,12 @@ export default {
 };
 </script>
 <style scoped>
+.male {
+  color: #1871c9;
+}
+.female {
+  color: #db3a16;
+}
 .chat-ppl-listitem {
   padding: 13px 16px 0;
   position: relative;

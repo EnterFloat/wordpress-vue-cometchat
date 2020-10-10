@@ -8,7 +8,7 @@ export class RestApi {
   async getUserId() {
     return new Promise((resolve, reject) => {
       CometChat.getLoggedinUser().then(usr => {
-        if (typeof usr !== "undefined") {
+        if (usr) {
           return resolve(usr.uid);
         } else {
           return reject("Could not get user id");
@@ -31,7 +31,7 @@ export class RestApi {
             options.headers.forEach(header => {
               request.setRequestHeader(header.key, header.value);
             });
-          },          
+          },
           success: function(data) {
             return resolve(data);
           },
@@ -55,7 +55,6 @@ export class RestApi {
     return new Promise((resolve, reject) => {
       if (typeof myScriptVars === "undefined")
         return reject("myScriptVars undefined");
-      console.log(myScriptVars.nonce);
       this.APICall({
         callType: "POST",
         url: myScriptVars.root + "wordpress-vue-cometchat/meta/get",
@@ -64,10 +63,12 @@ export class RestApi {
         }
       })
         .then(data => {
+          console.log(data);
           return resolve(data);
         })
-        .catch(() => {
-          return reject("error");
+        .catch(error => {
+          console.log(error);
+          return reject("error: " + String(error));
         });
     });
   }
@@ -75,7 +76,7 @@ export class RestApi {
   async updateMeta(cometchat_data) {
     return new Promise((resolve, reject) => {
       if (typeof myScriptVars === "undefined")
-      return reject("myScriptVars undefined");
+        return reject("myScriptVars undefined");
       console.log("Passed myScriptVars");
       this.APICall({
         callType: "POST",
@@ -109,6 +110,47 @@ export class RestApi {
             ]
           });
         })
+        .then(data => {
+          return resolve(data);
+        })
+        .catch(() => {
+          return reject("error");
+        });
+    });
+  }
+  // Get CometChat group
+  async ccGetGroup(guid) {
+    return new Promise((resolve, reject) => {
+      this.APICall({
+        callType: "GET",
+        url: "https://api-eu.cometchat.io/v2.0/groups/" + guid,
+        headers: [
+          { key: "appId", value: COMETCHAT_CONSTANTS.APP_ID },
+          { key: "apiKey", value: COMETCHAT_CONSTANTS.REST_API_KEY },
+          { key: "Content-Type", value: "application/json" }
+        ]
+      })
+        .then(data => {
+          return resolve(data);
+        })
+        .catch(() => {
+          return reject("error");
+        });
+    });
+  }
+  // Join CometChat group
+  async ccJoinGroup(guid, uid) {
+    return new Promise((resolve, reject) => {
+      this.APICall({
+        callType: "POST",
+        url: "https://api-eu.cometchat.io/v2.0/groups/" + guid + "/members",
+        data: JSON.stringify({ participants: [uid] }),
+        headers: [
+          { key: "appId", value: COMETCHAT_CONSTANTS.APP_ID },
+          { key: "apiKey", value: COMETCHAT_CONSTANTS.REST_API_KEY },
+          { key: "Content-Type", value: "application/json" }
+        ]
+      })
         .then(data => {
           return resolve(data);
         })
@@ -157,6 +199,27 @@ export class RestApi {
             ]
           });
         })
+        .then(data => {
+          return resolve(data);
+        })
+        .catch(() => {
+          return reject("error");
+        });
+    });
+  }
+  // Create CometChat user
+  async ccCreateUser(data) {
+    return new Promise((resolve, reject) => {
+      this.APICall({
+        callType: "POST",
+        url: "https://api-eu.cometchat.io/v2.0/users",
+        data: JSON.stringify(data),
+        headers: [
+          { key: "appId", value: COMETCHAT_CONSTANTS.APP_ID },
+          { key: "apiKey", value: COMETCHAT_CONSTANTS.REST_API_KEY },
+          { key: "Content-Type", value: "application/json" }
+        ]
+      })
         .then(data => {
           EventBus.$emit("update-users-list", data);
           return resolve(data);

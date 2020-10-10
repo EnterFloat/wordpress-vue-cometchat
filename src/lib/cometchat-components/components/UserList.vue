@@ -143,6 +143,8 @@ export default {
       this.getUserlist();
     },
     currentUser(data) {
+      console.log("currentUser in UsersList")
+      console.log(data)
       this.$root.$emit("selectedUser", data);
     },
     getUserlist(data) {

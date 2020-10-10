@@ -33,6 +33,8 @@ export default {
   },
   mounted() {
     this.$root.$on("selectedUser", data => {
+      console.log("MessageContainer mounted selectedUser")
+      console.log(data)
       this.userData = data;
     });
   },
@@ -66,7 +68,7 @@ export default {
   height: 100vh;
   position: relative;
   padding-top: 71px;
-  padding-bottom: 70px;
+  padding-bottom: 0px;
   flex: 1 1 0;
   width: calc(100% - 280px);
 }
@@ -347,7 +349,7 @@ a.cc1-chat-win-inpt-voice-btn {
 .smile-button {
   width: 20px;
   height: 20px;
-  display: block;
+  display: none;
   position: absolute;
   right: 9px;
   top: 6px;
@@ -600,10 +602,10 @@ a.cc1-chat-win-inpt-voice-btn {
 
 @media (min-width : 320px) and (max-width : 767px) {
   .cc1-chat-win-inpt-ext-wrap {
-    bottom: 60px;
+    /* bottom: 60px; */
   }
   .cc1-chat-win-conver-wrap {
-    height: calc(100vh - 185px);
+    /* height: calc(100vh - 185px); */
   }
 }
 

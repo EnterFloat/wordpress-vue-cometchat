@@ -13,9 +13,9 @@ function get_cometchat_meta_rest_route() {
         $user_id = apply_filters( 'determine_current_user', false );
         wp_set_current_user( $user_id );
         $current_user_id = get_current_user_id();
-            return [                
-                'get_user_meta: ' . json_encode(get_user_meta($current_user_id, 'cometchat_data', true)) . ' id: ' . $current_user_id,                     
-            ];
+        $return_obj = array("blinddaters_id" => $current_user_id, "user_meta" => get_user_meta($current_user_id, 'cometchat_data', true));               
+        return json_encode($return_obj);
+            // return '"{\"get_user_meta\"\: ' . json_encode(get_user_meta($current_user_id, 'cometchat_data', true)) . ', \"blinddaters_id\"\: ' . $current_user_id . "}";
         },
     ] );
 }

@@ -1,7 +1,7 @@
 <template>
   <div>
-    <Loader v-if="showmainloader" />
-    <div v-else class="page-wrapper">
+    <!-- <Loader v-if="showmainloader" /> -->
+    <div class="page-wrapper">
       <div
         class="page-int-wrapper"
         id="pageWrapper"
@@ -35,15 +35,16 @@
             <input type="submit" value="Remove friends" />
           </form>
           <a class="get-meta-button" v-on:click="logout"
-            >Logout {{ currentUser }}</a
+            >Logout {{ currentUser.uid }}</a
           >
+          <a class="get-meta-button" v-on:click="getUser">getUser</a>
         </div>
         <!--Calls and Group list-->
-        <LeftSidebar />
+        <!-- <LeftSidebar /> -->
         <!--Chat Window-->
         <MessageContainer :currentUser="currentUser" />
         <!-- Chat Detail -->
-        <RightSidebar />
+        <!-- <RightSidebar /> -->
       </div>
     </div>
   </div>
@@ -57,8 +58,15 @@ import RightSidebar from "./RightSidebar";
 import Loader from "./Loader";
 import { COMETCHAT_CONSTANTS } from "../../../CONSTS";
 
+// const randomName = uniqueNamesGenerator({ dictionaries: [adjectives, colors, animals] }); // big_red_donkey
+
+// const shortName = uniqueNamesGenerator({
+//   dictionaries: [adjectives, animals, colors], // colors can be omitted here as not used
+//   length: 2
+// }); // big-donkey
+
 export default {
-  name: "ChatContainer",
+  name: "GuestChatContainer",
   components: {
     Loader,
     LeftSidebar,
@@ -67,20 +75,21 @@ export default {
   },
   data() {
     return {
-      leftOpen: true,
+      leftOpen: false,
       centerOpen: true,
       rightOpen: false,
       currentUser: null,
       friendsToAdd: '["superhero1"]',
       friendsToRemove: '["superhero1"]',
       userMetadata: '{"gender": "male"}',
-      showmainloader: true,
+      showmainloader: false,
       uid: null,
       reloadIntervalChat: null,
     };
   },
   methods: {
-    updateMetaButton() { // updateMetaButton: function ()
+    updateMetaButton() {
+      // updateMetaButton: function ()
       this.updateMeta({
         cometchat_id: "superhero1",
         users_to_unblock: {
@@ -104,13 +113,20 @@ export default {
         });
     },
     getUser() {
-      this.ccGetUser()
-        .then((data) => {
-          this.currentUser = data.data;
-        })
-        .catch(() => {
-          console.log(data);
-        });
+      return new Promise((resolve, reject) => {
+        this.ccGetUser()
+          .then((data) => {
+            console.log("getUser");
+            this.currentUser = data.data;
+            console.log(this.currentUser);
+            return resolve(this.currentUser);
+          })
+          .catch((error) => {
+            console.log(error);
+            // this.router.go()// this.logout()
+            return reject(error);
+          });
+      });
     },
     updateUser(e) {
       if (!this.userMetadata) {
@@ -169,26 +185,90 @@ export default {
           });
         });
     },
-    loginAndLoadDataChat() {
+    createUserJoinChat() {
+      let new_user;
+      new_user = {
+        uid: "12345",
+        name: "GUEST_" + "12345678",
+        role: "guest",
+      };
+      let found_group;
       this.showmainloader = true;
-      console.log("loginAndLoadDataChat");
-      this.handleAuth(false)
+      console.log("createUserJoinChat");
+      this.handleAuth(true)
+        .then((status) => {
+          return new Promise((resolve, reject) => {
+            CometChat.getLoggedinUser().then((user) => {
+              if (user) {
+                return "A guest must already be signed in";
+              } else {
+                // let uuid = String(this.$uuid.v4());
+                // new_user = {
+                //   uid: uuid,
+                //   name: "GUEST_" + uuid.slice(0, 8),
+                //   role: "guest",
+                // };
+                // this.ccCreateUser(new_user)
+                //   .then((status) => {
+                //     console.log("User created!");
+                //     console.log(status);
+                //     return this.ccSignIn(new_user.uid);
+                //   })
+                this.ccSignIn(new_user.uid) // remove this
+                  .then((status) => {
+                    console.log(status);
+                    this.getUser().then((user) => {
+                      console.log(user);
+                      if (user) {
+                        console.log("Guest user has been signed in!");
+                        return resolve(this.ccGetGroup("publicgroup"));
+                      } else {
+                        console.log("Guest user not signed in!!");
+                        throw "Not signed in correctly";
+                      }
+                    });
+                  })
+                  .catch((error) => {
+                    console.log(error);
+                    return reject("New guest couldn't be created");
+                  });
+              }
+            });
+          });
+        })
+        .then((group) => {
+          console.log("Found group");
+          found_group = group.data;
+          return this.ccJoinGroup(found_group.guid, new_user.uid);
+        })
         .then((success) => {
-          console.log("Success: ");
-          console.log(success)
+          console.log("Joined group");
+          console.log(success);
+          console.log(found_group);
+          // this.uid = new_user.uid;
           this.showmainloader = false;
+          // this.currentUser = new_user
+          this.getUser().then((user) => {
+            this.$root.$emit("selectedUser", found_group);
+          });
+          this.$router.push({
+            name: "GuestChatContainer",
+          });
+          console.log(found_group);
         })
         .catch((error) => {
-          // location.href = "#/signed-out";
-          console.log("Error: " + error);
+          console.log(
+            "Error. Either a user exists, or a gust couldn't be created: "
+          );
+          console.log(error);
         });
     },
   },
   beforeRouteLeave(to, from, next) {
-    clearInterval(this.reloadIntervalChat);
+    clearInterval(this.reloadIntervalGuest);
     next();
   },
-  created() {  
+  created() {
     CometChat.getLoggedinUser().then(
       (user) => {
         if (user) {
@@ -198,16 +278,17 @@ export default {
       (error) => {
         console.log("yes here", error);
       }
-    );  
+    );
   },
 
   mounted() {
     this.getUser();
-    this.loginAndLoadDataChat();
-    this.reloadIntervalChat = setInterval(() => {
-      this.loginAndLoadDataChat();
+    this.createUserJoinChat();
+    this.reloadIntervalGuest = setInterval(() => {
+      this.createUserJoinChat();
     }, 1000000);
     this.$root.$on("selectedUser", (data) => {
+      console.log("GuestChatContainer selectedUser");
       console.log(data);
       const el = document.getElementById("pageWrapper");
       console.log("back butn", el);

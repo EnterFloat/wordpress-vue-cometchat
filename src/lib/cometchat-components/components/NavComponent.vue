@@ -1,11 +1,19 @@
 <template>
-  <div class="ccl-left-panel-nav-list clearfix">
+  <div class="ccl-left-panel-nav-list">
     <div class="ccl-left-panel-nav-listitem">
       <a
         id="contactlist"
         href="javascript:void(0);"
         v-on:click="tabClickHandler($event)"
         class="ccl-left-panel-nav-link people active"
+      ></a>
+    </div>
+    <div class="ccl-left-panel-nav-listitem">
+      <a
+        id="chatlist"
+        href="javascript:void(0);"
+        v-on:click="tabClickHandler($event)"
+        class="ccl-left-panel-nav-link chat"
       ></a>
     </div>
     <!-- <div class="ccl-left-panel-nav-listitem">
@@ -18,28 +26,20 @@
     </div> -->
     <div class="ccl-left-panel-nav-listitem">
       <a
-        id="chatlist"
-        href="javascript:void(0);"
-        v-on:click="tabClickHandler($event)"
-        class="ccl-left-panel-nav-link chat"
-      ></a>
-    </div>
-    <div class="ccl-left-panel-nav-listitem">
-      <a
         id="grouplist"
         href="javascript:void(0);"
         v-on:click="tabClickHandler($event)"
         class="ccl-left-panel-nav-link grp-chat"
       ></a>
     </div>
-    <div class="ccl-left-panel-nav-listitem">
+    <!-- <div class="ccl-left-panel-nav-listitem">
       <a
         id="morelist"
         href="javascript:void(0);"
         v-on:click="tabClickHandler($event)"
         class="ccl-left-panel-nav-link more"
       ></a>
-    </div>
+    </div> -->
   </div>
 </template>
 
@@ -81,3 +81,11 @@ export default {
   }
 };
 </script>
+
+<style>
+.ccl-left-panel-nav-list {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+</style>

@@ -3,7 +3,9 @@
     <div class="cc1-chat-win-header clearfix" v-if="userData.uid || userData.guid">
       <!-- For user -->
       <div class="cc1-chat-win-user">
+        <div v-if="showBackArrow">
         <a href="javascript:;" class="back-btn" v-on:click="backToLeft()">&nbsp;</a>
+        </div>
         <div class="cc1-chat-win-user-thumb">
           <img v-if="userData.avatar" :src="userData.avatar" />
           <img v-else-if="userData.icon" :src="userData.icon" />
@@ -20,13 +22,14 @@
           <span
             class="cc1-chat-win-user-status"
             v-else-if="userData.status === 'offline' && userData.lastActiveAt"
-          >Last Active At: {{getDate(userData.lastActiveAt)}}</span>
+          >Sidst aktiv: {{getDate(userData.lastActiveAt)}}</span>
         </div>
       </div>
       <div class="cc1-chat-win-con-opt-wrap">
+        <input type="button" v-on:click="signup" value="Opret dig på Blinddaters"/>
         <!-- <a href="javascript:void(0);" class="cc1-chat-win-con-opt call" v-on:click="makeAudioCall($event)"></a> -->
         <!-- <a href="javascript:void(0);" class="cc1-chat-win-con-opt video-call" v-on:click="makeVideoCall($event)"></a> -->
-        <a href="javascript:void(0);" class="cc1-chat-win-con-opt details" v-on:click="clickMenuOption()"></a>
+        <!-- <a href="javascript:void(0);" class="cc1-chat-win-con-opt details" v-on:click="clickMenuOption()"></a> -->
       </div>
     </div>
   </div>
@@ -40,7 +43,8 @@ export default {
   data() {
     return {
       menuOption: false,
-      userData: {}
+      userData: {},
+      displayBackArrow: false
     };
   },
   // props:['userData'],
@@ -52,6 +56,9 @@ export default {
   },
   
   methods: {
+    signup() {
+      window.open('https://dev.blinddaters.dk', '_blank');
+    },
     getDate(datetime) {
       let date = new Date(datetime * 1000);
       return date.toLocaleTimeString();
@@ -124,6 +131,20 @@ export default {
   },
 
   created() {
+    CometChat.getLoggedinUser().then(
+      (user) => {
+        if (user) {
+          if (user.role == "guest") {
+            this.showBackArrow = false;
+          } else {
+            this.showBackArrow = true;
+          }
+        }
+      },
+      (error) => {
+        console.log("yes here", error);
+      }
+    );
     this.attachListener(this.callback);
   },
 
