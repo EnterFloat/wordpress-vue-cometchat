@@ -152,7 +152,17 @@ Vue.mixin({
               EventBus.$emit("update-users-list", success);
               console.log("Added friend(s):");
               console.log(success)
-              return resolve(success);
+              let new_meta = {}
+              for (const [key, value] of Object.entries(success.data.accepted)) {
+                if (value.success == false) {
+                  new_meta[key] = blinddaters_data.user_meta.users_to_unblock[key]
+                }
+              }
+              console.log(new_meta)      
+              return this.updateMeta(new_meta)        
+            })
+            .then(status => {
+
             })
             .catch(error => {
               console.log(error);
@@ -313,7 +323,7 @@ Vue.mixin({
               }
               return resolve("Signed in correctly");
             }).catch(error => {
-              throw "Couldn't update friends in CometChat"
+              return resolve("Couldn't update metadata correctly")
             })
           })
           .catch(error => {

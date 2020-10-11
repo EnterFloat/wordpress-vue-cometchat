@@ -3,7 +3,7 @@
     <a href="javascript:void(0);" class="ccl-center-panel-close-link"></a>
 
     <!-- <MessageHeader v-if="userData.uid || userData.guid" :userData="userData" /> -->
-    <MessageHeader />
+    <MessageHeader :currentUser="currentUser" />
     <MessageView :currentUser="currentUser" />
     <MessageFooter />
 
@@ -67,7 +67,7 @@ export default {
 .ccl-center-panel {
   height: 100vh;
   position: relative;
-  padding-top: 71px;
+  padding-top: 65px;
   padding-bottom: 0px;
   flex: 1 1 0;
   width: calc(100% - 280px);
@@ -158,9 +158,10 @@ export default {
   border-radius: 12px;
   background-color: rgba(248, 248, 248, 0.92);
   padding: 8px 12px;
-  word-break: break-all;
+  /* word-break: break-all; */
 }
 .chat-txt-msg {
+  word-wrap: break-word;
   font-size: 15px;
   margin: 0;
   letter-spacing: -0.1px;
@@ -193,7 +194,7 @@ export default {
   background-color: rgba(51, 153, 255, 0.92);
   color: #fff;
   padding: 8px 12px;
-  word-break: break-all;
+  /* word-break: break-all; */
 }
 .cc1-chat-win-timestamp {
   display: inline-block;
@@ -600,7 +601,10 @@ a.cc1-chat-win-inpt-voice-btn {
   margin: 0 auto;
 }
 
-@media (min-width : 320px) and (max-width : 767px) {
+@media all and (max-width : 767px) {
+  .ccl-center-panel {  
+    padding-top: 101px;  
+}
   .cc1-chat-win-inpt-ext-wrap {
     /* bottom: 60px; */
   }

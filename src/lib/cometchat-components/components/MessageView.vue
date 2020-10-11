@@ -583,6 +583,10 @@ export default {
 
 .cc1-chat-win-sndr-msg-wrap {
   background-color: #9dc6c8;
+  word-wrap: break-word;
+}
+.chat-txt-msg {
+  word-wrap: break-word;
 }
 
 .sender-msg .cc1-chat-win-msg-time-wrap {

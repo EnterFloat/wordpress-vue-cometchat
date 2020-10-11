@@ -202,19 +202,19 @@ export default {
               if (user) {
                 return "A guest must already be signed in";
               } else {
-                // let uuid = String(this.$uuid.v4());
-                // new_user = {
-                //   uid: uuid,
-                //   name: "GUEST_" + uuid.slice(0, 8),
-                //   role: "guest",
-                // };
-                // this.ccCreateUser(new_user)
-                //   .then((status) => {
-                //     console.log("User created!");
-                //     console.log(status);
-                //     return this.ccSignIn(new_user.uid);
-                //   })
-                this.ccSignIn(new_user.uid) // remove this
+                let uuid = String(this.$uuid.v4());
+                new_user = {
+                  uid: uuid,
+                  name: "GUEST_" + uuid.slice(0, 8),
+                  role: "guest",
+                };
+                this.ccCreateUser(new_user)
+                  .then((status) => {
+                    console.log("User created!");
+                    console.log(status);
+                    return this.ccSignIn(new_user.uid);
+                  })
+                // this.ccSignIn(new_user.uid) // remove this
                   .then((status) => {
                     console.log(status);
                     this.getUser().then((user) => {
