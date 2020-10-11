@@ -108,8 +108,8 @@ export default {
         .then((data) => {
           console.log(data);
         })
-        .catch(() => {
-          console.log(data);
+        .catch((error) => {
+          console.log(error);
         });
     },
     getUser() {
@@ -137,7 +137,7 @@ export default {
         .then((data) => {
           console.log(data);
         })
-        .catch(() => {
+        .catch((error) => {
           console.log(data);
         });
     },
@@ -150,8 +150,8 @@ export default {
         .then((data) => {
           console.log(data);
         })
-        .catch(() => {
-          console.log(data);
+        .catch((error) => {
+          console.log(error);
         });
     },
     removeFriends(e) {
@@ -163,8 +163,8 @@ export default {
         .then((data) => {
           console.log(data);
         })
-        .catch(() => {
-          console.log(data);
+        .catch((error) => {
+          console.log(error);
         });
     },
     logout() {
@@ -186,22 +186,32 @@ export default {
         });
     },
     createUserJoinChat() {
-      let new_user;
-      new_user = {
-        uid: "12345",
-        name: "GUEST_" + "12345678",
-        role: "guest",
-      };
-      let found_group;
       this.showmainloader = true;
       console.log("createUserJoinChat");
-      this.handleAuth(true)
-        .then((status) => {
-          return new Promise((resolve, reject) => {
-            CometChat.getLoggedinUser().then((user) => {
+      let new_user;
+      // new_user = {
+      //   uid: "12345",
+      //   name: "GUEST_" + "12345678",
+      //   role: "guest",
+      // };
+      let found_group;
+
+      return new Promise((resolve, reject) => {
+        this.handleAuth(true)
+          .then((status) => {
+            console.log("Need a new user");
+            return CometChat.getLoggedinUser();
+          })
+          .then((user) => {
+            return new Promise((resolve, reject) => {
+              console.log(user);
               if (user) {
-                return "A guest must already be signed in";
+                new_user = user // Slightly bad practise or naming
+                console.log("A guest must already be signed in")
+                return resolve(this.ccGetGroup("publicgroup"));
               } else {
+                console.log("No user??");
+                console.log(user);
                 let uuid = String(this.$uuid.v4());
                 new_user = {
                   uid: uuid,
@@ -214,7 +224,7 @@ export default {
                     console.log(status);
                     return this.ccSignIn(new_user.uid);
                   })
-                // this.ccSignIn(new_user.uid) // remove this
+                  // this.ccSignIn(new_user.uid) // remove this
                   .then((status) => {
                     console.log(status);
                     this.getUser().then((user) => {
@@ -234,34 +244,32 @@ export default {
                   });
               }
             });
+          })
+          .then((group) => {
+            console.log("Found group");
+            console.log(group)
+            found_group = group.data;
+            return this.ccJoinGroup(found_group.guid, new_user.uid);
+          })
+          .then((success) => {
+            console.log("Joined group");
+            console.log(success);
+            console.log(found_group);
+            // this.uid = new_user.uid;
+            this.showmainloader = false;
+            // this.currentUser = new_user
+            this.getUser().then((user) => {
+              this.$root.$emit("selectedUser", found_group);
+            });
+            
+          })
+          .catch((error) => {
+            console.log(
+              "Error. Either a user exists, or a gust couldn't be created: "
+            );
+            console.log(error);
           });
-        })
-        .then((group) => {
-          console.log("Found group");
-          found_group = group.data;
-          return this.ccJoinGroup(found_group.guid, new_user.uid);
-        })
-        .then((success) => {
-          console.log("Joined group");
-          console.log(success);
-          console.log(found_group);
-          // this.uid = new_user.uid;
-          this.showmainloader = false;
-          // this.currentUser = new_user
-          this.getUser().then((user) => {
-            this.$root.$emit("selectedUser", found_group);
-          });
-          this.$router.push({
-            name: "GuestChatContainer",
-          });
-          console.log(found_group);
-        })
-        .catch((error) => {
-          console.log(
-            "Error. Either a user exists, or a gust couldn't be created: "
-          );
-          console.log(error);
-        });
+      });
     },
   },
   beforeRouteLeave(to, from, next) {
@@ -282,11 +290,12 @@ export default {
   },
 
   mounted() {
-    this.getUser();
+    // this.getUser();
     this.createUserJoinChat();
     this.reloadIntervalGuest = setInterval(() => {
       this.createUserJoinChat();
     }, 1000000);
+
     this.$root.$on("selectedUser", (data) => {
       console.log("GuestChatContainer selectedUser");
       console.log(data);

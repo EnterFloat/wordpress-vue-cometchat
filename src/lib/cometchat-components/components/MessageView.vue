@@ -346,16 +346,16 @@ export default {
   },
 
   created() {
-    CometChat.getLoggedinUser().then(
-      (user) => {
-        if (user) {
-          this.currentUser = user;
-        }
-      },
-      (error) => {
-        console.log("yes here", error);
-      }
-    );
+    // CometChat.getLoggedinUser().then(
+    //   (user) => {
+    //     if (user) {
+    //       this.currentUser = user;
+    //     }
+    //   },
+    //   (error) => {
+    //     console.log("yes here", error);
+    //   }
+    // );
     this.attachListener((message, isReceipt) => {
       if (!isReceipt) {
         // this.messages=[...this.messages,message];

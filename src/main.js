@@ -39,7 +39,7 @@ Vue.mixin({
           })
           .catch(error => {
             return reject(
-              '{"blinddaters_id":1,"user_meta":{"cometchat_id":"superhero1","users_to_unblock":{"221":{"UID":"221","name":"jack-black2","avatarURL":"","profileURL":"https://dev.blinddaters.dk/profil-side/?profile_id=221","role":"","unblocked":"false","cometchat_id":""}}}}'
+              '{"blinddaters_id":1,"user_meta":{"cometchat_id":"","users_to_unblock":{"221":{"UID":"221","name":"jack-black2","avatarURL":"","profileURL":"https://dev.blinddaters.dk/profil-side/?profile_id=221","role":"","unblocked":"false","cometchat_id":""}}}}'
             ); // reject
           });
       });
@@ -148,24 +148,23 @@ Vue.mixin({
           }
           console.log(users_to_befriend);
           this.ccAddFriends(users_to_befriend)
-            .then(success => {
-              EventBus.$emit("update-users-list", success);
+            .then(success => {              
               console.log("Added friend(s):");
-              console.log(success)
-              let new_meta = {}
-              for (const [key, value] of Object.entries(success.data.accepted)) {
+              console.log(success);
+              let new_meta = {};
+              for (const [key, value] of Object.entries(
+                success.data.accepted
+              )) {
                 if (value.success == false) {
-                  new_meta[key] = blinddaters_data.user_meta.users_to_unblock[key]
+                  new_meta[key] =
+                    blinddaters_data.user_meta.users_to_unblock[key];
                 }
               }
-              console.log(new_meta)      
-              return this.updateMeta(new_meta)        
+              console.log(new_meta);
+              return this.updateMeta(new_meta);
             })
-            .then(status => {
-
-            })
+            .then(status => {})
             .catch(error => {
-              console.log(error);
               return reject(error);
             });
         }
@@ -197,7 +196,6 @@ Vue.mixin({
       return new Promise((resolve, reject) => {
         CometChat.login(cometchat_id, COMETCHAT_CONSTANTS.API_KEY)
           .then(() => {
-            console.log("Logged in again ccSignIn");
             return resolve({
               message: "Signed in correctly",
               component_name: "ChatContainer",
@@ -213,14 +211,17 @@ Vue.mixin({
     },
     ccReSignIn(cometchat_id) {
       return new Promise((resolve, reject) => {
-        CometChat.logout().then(() => {
-          console.log(
-            "Logged out. Logging in again with cometchat_id: " + cometchat_id
-          );
-          return CometChat.login(cometchat_id, COMETCHAT_CONSTANTS.API_KEY);
-        });
-        CometChat.login(cometchat_id, COMETCHAT_CONSTANTS.API_KEY)
+        // Perhaps check if the user is truly signed in?
+        // Logout the old user
+        CometChat.logout()
           .then(() => {
+            console.log(
+              "Logged out. Logging in again with cometchat_id: " + cometchat_id
+            );
+            return CometChat.login(cometchat_id, COMETCHAT_CONSTANTS.API_KEY); // Login the new user
+          })
+          .then(() => {
+            // The user has been correctly re signed in
             console.log("Logged in again");
             return resolve({
               message: "Signed in correctly",
@@ -228,9 +229,12 @@ Vue.mixin({
               should_reload: true
             });
           })
-          .catch(() => {
+          .catch(error => {
             return reject(
-              "Couldn't re sign in CometChat user with id: " + cometchat_id
+              "Couldn't re sign in CometChat user with new id: " +
+                cometchat_id +
+                ". Error: " +
+                error
             );
           });
       });
@@ -239,97 +243,122 @@ Vue.mixin({
       console.log(
         "Going to make sure, the right user is logged in. Otherwise logging out. First: check if we can get data from blinddaters."
       );
+      let blinddaters_data = {};
+      let should_reload = false
       return new Promise((resolve, reject) => {
-        let blinddaters_data = {};
-        this.getMeta() // Should be: this.getMeta()
+        this.getMeta() // Getting metadata from Blinddaters REST API
           .then(data => {
-            blinddaters_data = JSON.parse(data);
-            console.log(JSON.stringify(blinddaters_data));
-            console.log(blinddaters_data);
+            // A user is logged in on Blinddaters
+            blinddaters_data = JSON.parse(data); // Metadata from Blinddaters REST API
+            // Is the field empty?
             if (blinddaters_data.user_meta.cometchat_id == "") {
               throw "No associated CometChat User";
             } else {
-              console.log(blinddaters_data);
-              return CometChat.getLoggedinUser();
-              // return reject("No associated CometChat User")
-              // new_user = {uid: "cometchat_" + String(blinddaters_data.blinddaters_id), name: blinddaters_data.user_meta.name, avatar: blinddaters_data.user_meta.avatar}
-              // this.ccCreateUser()
+              // A user is signed in to Blinddaters and a cometchat_id is associated
+              return CometChat.getLoggedinUser(); // Let's check if a CometChat user is logged in
             }
           })
           .then(user => {
             if (user) {
+              // A CometChat user is logged in
               console.log(
                 "User already logged in with id: " +
                   user.uid +
                   ". Check if matches user from blinddaters"
               );
+              // Does the Blinddaters metadata cometchat_id match with the signed in CometChat user?
               if (user.uid == blinddaters_data.user_meta.cometchat_id) {
-                console.log({
-                  component_name: "ChatContainer",
-                  message: "It matches. We are done."
-                });
+                // Everything is good.
+                console.log("It matches. We are done.");
                 return {
                   component_name: "ChatContainer",
                   should_reload: false,
                   message: "It matches. We are done."
                 };
               } else {
+                // We have to re sign in with the cometchat_id from Blinddaters
                 console.log("It doesn't match. Logging out");
+                should_reload = true
                 return this.ccReSignIn(blinddaters_data.user_meta.cometchat_id);
               }
             } else {
+              // No CometChat user is logged in
               console.log(
                 "User not logged in on CometChat. Signing in with id: " +
                   blinddaters_data.user_meta.cometchat_id
               );
-              return this.ccSignIn(blinddaters_data.user_meta.cometchat_id);
+              should_reload = true
+              return this.ccSignIn(blinddaters_data.user_meta.cometchat_id); // Logging in with cometchat_id from Blinddaters
             }
           })
-          .then(success => {            
+          .then(success => {
+            // User is now logged in with ID from Blinddaters
             console.log("success");
             console.log(success);
-            this.loadBlinddatersData(blinddaters_data).then(data => {
-              if (success) {
-                if ("component_name" in success) {
-                  if ("should_reload" in success) {
-                    console.log(
-                      "This router name: " + String(this.$route.name)
-                    );
-                    console.log(
-                      "should_reload: " + String(success["should_reload"])
-                    );
-                    console.log(
-                      "component_name: " + String(success["component_name"])
-                    );
-                    if (
-                      this.$route.name == success["component_name"] &&
-                      success["should_reload"] == true
-                    ) {
-                      this.$router.go();
-                    } else if (
-                      success["component_name"] != "stay" &&
-                      this.$route.name != success["component_name"]
-                    ) {
-                      this.$router.push({
-                        name: success["component_name"]
-                      });
-                    }
-                  }
-                }
-              }
-              console.log("Success is_guest: " + is_guest)
-              if (is_guest) {
-                return reject("No guest needed.")
-              }
-              return resolve("Signed in correctly");
-            }).catch(error => {
-              return resolve("Couldn't update metadata correctly")
-            })
+
+            this.loadBlinddatersData(blinddaters_data) // Load news from Blinddaters like new friends and metadata updates
+              .then(status => {
+                // News loaded correctly
+                console.log("loadBlinddatersData success: " + status);
+              })
+              .catch(error => {
+                // Couldn't load news
+                console.log("loadBlinddatersData error: " + error);
+              });
+
+            if (is_guest) {
+              this.$router.push({
+                name: "ChatContainer"
+              });
+              return reject("No guest needed.");
+            }
+            if (this.$route.name != "ChatContainer") {
+              this.$router.push({
+                name: "ChatContainer"
+              });
+            } else if (should_reload == true) {
+              this.$router.go()
+            }
+            return resolve("Pushing to ChatContainer");
+
+            // if (success) {
+            //   if ("component_name" in success) {
+            //     if ("should_reload" in success) {
+            //       console.log("This router name: " + String(this.$route.name));
+            //       console.log(
+            //         "should_reload: " + String(success["should_reload"])
+            //       );
+            //       console.log(
+            //         "component_name: " + String(success["component_name"])
+            //       );
+            //       if (
+            //         this.$route.name == success["component_name"] &&
+            //         success["should_reload"] == true
+            //       ) {
+            //         this.$router.go();
+            //       } else if (
+            //         success["component_name"] != "stay" &&
+            //         this.$route.name != success["component_name"]
+            //       ) {
+            //         this.$router.push({
+            //           name: success["component_name"]
+            //         });
+            //       }
+            //     }
+            //   }
+            // }
+            // console.log("Success is_guest: " + is_guest);
+            // if (is_guest) {
+            //   return reject("No guest needed.");
+            // }
+            // return resolve("Signed in correctly");
           })
           .catch(error => {
-            console.log("is_guest: " + String(is_guest))
+            console.log(error);
+            console.log("is_guest: " + String(is_guest));
             if (is_guest) {
-              return resolve("A new user is needed.")
+              console.log("A new user is needed")
+              return resolve("A new user is needed.");
             }
             console.log("An error occured: ");
             console.log(error);

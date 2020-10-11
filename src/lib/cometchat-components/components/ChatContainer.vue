@@ -68,7 +68,7 @@ export default {
   data() {
     return {
       leftOpen: true,
-      centerOpen: true,
+      centerOpen: false,
       rightOpen: false,
       currentUser: null,
       friendsToAdd: '["superhero1"]',
@@ -189,25 +189,26 @@ export default {
     next();
   },
   created() {  
-    CometChat.getLoggedinUser().then(
-      (user) => {
-        if (user) {
-          this.currentUser = user;
-        }
-      },
-      (error) => {
-        console.log("yes here", error);
-      }
-    );  
+    // CometChat.getLoggedinUser().then(
+    //   (user) => {
+    //     if (user) {
+    //       this.currentUser = user;
+    //     }
+    //   },
+    //   (error) => {
+    //     console.log("yes here", error);
+    //   }
+    // );  
   },
 
   mounted() {
-    this.getUser();
+    // this.getUser();
     this.loginAndLoadDataChat();
     this.reloadIntervalChat = setInterval(() => {
       this.loginAndLoadDataChat();
     }, 1000000);
     this.$root.$on("selectedUser", (data) => {
+      this.currentUser = data
       console.log(data);
       const el = document.getElementById("pageWrapper");
       console.log("back butn", el);

@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- clearfix -->
-    <div class="cc1-chat-win-header" v-if="userData.uid || userData.guid">
+    <div class="cc1-chat-win-header" :class="{'cc1-chat-win-header-guest': isGuest == true}" v-if="userData.uid || userData.guid">
       <!-- For user -->
       <div class="cc1-chat-win-user">
         <div v-if="isGuest == false">
@@ -43,10 +43,11 @@
         </div>
       </div>
       <div class="signup-banner"
-      v-on:click="signup">
+      v-on:click="signup"
+      v-if="isGuest == true"
+      >
       <a
         class="signup-banner-link"
-        v-if="isGuest == true"
         type="button"
         >Du chatter som {{currentUser.name}}. Opret dig på <span>Blinddaters</span>
         </a>
@@ -194,11 +195,16 @@ export default {
 
 .cc1-chat-win-header {
   display: grid;
-  grid-template-columns: 1fr 500px;
+  grid-template-columns: 1fr;
   grid-template-rows: 1fr;
   grid-template-areas: "user banner";
   /* justify-content: space-between; */
   border-bottom: 1px solid #bbb;
+}
+
+.cc1-chat-win-header-guest {
+  grid-template-columns: 1fr 500px;
+  grid-template-rows: 1fr;
 }
 
 .cc1-chat-win-user {
